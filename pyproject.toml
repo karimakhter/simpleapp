@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "simpleapp"
+version = "0.2.0"
+description = "Simple Flask app for Kind/Argo CD testing"
+authors = ["karim"]
+readme = "README.md"
+packages = [{ include = "simpleapp", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.15"
+flask = "^3.1.1"
+gunicorn = "^23.0.0"
+
+[tool.poetry.scripts]
+simpleapp = "simpleapp.app:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"

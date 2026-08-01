@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: simpleapp
+  namespace: simpleapp
+  labels:
+    app.kubernetes.io/name: simpleapp
+spec:
+  selector:
+    app.kubernetes.io/name: simpleapp
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
