@@ -5,6 +5,7 @@ metadata:
   namespace: simpleapp
   labels:
     app.kubernetes.io/name: simpleapp
+  annotations:
     app.kubernetes.io/source: https://github.com/karimakhter/simpleapp
 spec:
   replicas: 2
