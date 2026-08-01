@@ -17,11 +17,13 @@ FROM python:3.12-slim AS runtime
 
 ENV PYTHONUNBUFFERED=1 \
     APP_VERSION=0.2.0 \
-    PORT=8080
+    PORT=8080 \
+    PYTHONPATH=/app
 
 WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
+COPY --from=builder /build/src/simpleapp /app/simpleapp
 
 EXPOSE 8080
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "--workers", "2", "--access-logfile", "-", "simpleapp.app:app"]

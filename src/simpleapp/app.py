@@ -6,14 +6,11 @@ import os
 import platform
 import socket
 import time
-import uuid
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
-
-_ITEMS: dict[str, dict] = {}
 
 
 def _version() -> str:
@@ -22,7 +19,7 @@ def _version() -> str:
 
 @app.get("/")
 def welcome():
-    """Original simpleapp welcome page."""
+    """Welcome page with links to test APIs."""
     return (
         "<!doctype html>"
         "<html><head><title>simpleapp</title></head>"
@@ -37,7 +34,6 @@ def welcome():
         "<li><a href='/api/echo?msg=hello'>/api/echo?msg=hello</a></li>"
         "<li><a href='/api/time'>/api/time</a></li>"
         "<li><a href='/api/headers'>/api/headers</a></li>"
-        "<li><a href='/api/items'>/api/items</a></li>"
         "<li><a href='/api/status/418'>/api/status/418</a></li>"
         "<li><a href='/api/slow?seconds=1'>/api/slow?seconds=1</a></li>"
         "</ul>"
@@ -55,6 +51,21 @@ def readyz():
     return jsonify(status="ready", hostname=socket.gethostname())
 
 
+@app.get("/api/host")
+def api_host():
+    """Container / OS identity for testing."""
+    uname = platform.uname()
+    return jsonify(
+        hostname=socket.gethostname(),
+        fqdn=socket.getfqdn(),
+        os=uname.system,
+        os_release=uname.release,
+        architecture=uname.machine,
+        python=platform.python_version(),
+        platform=platform.platform(),
+        pid=os.getpid(),
+    )
+
 
 @app.get("/api/info")
 def api_info():
@@ -65,7 +76,7 @@ def api_info():
         os=platform.system(),
         architecture=platform.machine(),
         python=platform.python_version(),
-     )
+    )
 
 
 @app.get("/api/echo")
@@ -116,6 +127,7 @@ def api_slow():
     seconds = max(0.0, min(seconds, 10.0))
     time.sleep(seconds)
     return jsonify(slept_seconds=seconds)
+
 
 def main() -> None:
     port = int(os.environ.get("PORT", "8080"))
