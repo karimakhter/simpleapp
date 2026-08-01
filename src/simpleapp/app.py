@@ -6,11 +6,14 @@ import os
 import platform
 import socket
 import time
+import uuid
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+
+_ITEMS: dict[str, dict] = {}
 
 
 def _version() -> str:
@@ -34,6 +37,7 @@ def welcome():
         "<li><a href='/api/echo?msg=hello'>/api/echo?msg=hello</a></li>"
         "<li><a href='/api/time'>/api/time</a></li>"
         "<li><a href='/api/headers'>/api/headers</a></li>"
+        "<li><a href='/api/items'>/api/items</a></li>"
         "<li><a href='/api/status/418'>/api/status/418</a></li>"
         "<li><a href='/api/slow?seconds=1'>/api/slow?seconds=1</a></li>"
         "</ul>"
@@ -127,6 +131,43 @@ def api_slow():
     seconds = max(0.0, min(seconds, 10.0))
     time.sleep(seconds)
     return jsonify(slept_seconds=seconds)
+
+
+@app.get("/api/items")
+def list_items():
+    return jsonify(items=list(_ITEMS.values()), count=len(_ITEMS))
+
+
+@app.post("/api/items")
+def create_item():
+    body = request.get_json(silent=True) or {}
+    name = body.get("name")
+    if not name or not isinstance(name, str):
+        return jsonify(error="JSON body must include string 'name'"), 400
+    item_id = str(uuid.uuid4())
+    item = {
+        "id": item_id,
+        "name": name,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    _ITEMS[item_id] = item
+    return jsonify(item), 201
+
+
+@app.get("/api/items/<item_id>")
+def get_item(item_id: str):
+    item = _ITEMS.get(item_id)
+    if item is None:
+        return jsonify(error="not found"), 404
+    return jsonify(item)
+
+
+@app.delete("/api/items/<item_id>")
+def delete_item(item_id: str):
+    if item_id not in _ITEMS:
+        return jsonify(error="not found"), 404
+    del _ITEMS[item_id]
+    return "", 204
 
 
 def main() -> None:
